@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="#">
+    <title>jlpt 한자 맞추기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            background-color: #f2f2f2;
+            height: 100vh;
+        }
+        #container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #score {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        #scoreValue {
+            font-weight: bold;
+            color: #333;
+        }
+        #scoreContainer, #timers {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #score, #timer {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        #scoreValue, #timerValue {
+            color: black;
+        }
+        #se {
+            margin-top: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            border: 2px solid #3498db;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            width: 200px;
+            margin: 0 auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #answer {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        #sa {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #3498db;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease;
+        }
+        #sa:focus {
+            border-color: #2ecc71;
+            outline: none;
+        }
+        #buttonContainer {
+            margin-top: 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer; 
+            margin-top: 10px;
+            width: 80%;
+            max-width: 300px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        img {
+            height: 350px;
+            width: 350px;
+        }
+        @media screen and (max-width: 480px) {
+            /* 모바일 화면에서 적용될 스타일 */
+            img {
+                height: 200px;
+                width: 200px;
+            }
+        
+            #se,#ss {
+                font-size: 24px;
+                padding: 10px;
+                width: 150px;
+            }
+        
+            #sa {
+                font-size: 16px;
+                padding: 15px;
+                width: 80%;
+                max-width: 250px;
+            }
+        
+            #buttonContainer button {
+                font-size: 14px;
+                padding: 8px 16px;
+                width: 80%;
+                max-width: 250px;
+            }
+        }
+        
+    
+</style>
+</head>
+<body>
+    <div id="container">
+        <h2 id="he">랜덤 한자 맞추기</h2>
+        <div id="scoreContainer">
+            <div id="score">맞힌 갯수: <span id="scoreValue">0</span></div>
+        </div>
+        <div id="timers">
+            <div id="timer">남은 시간: <span id="timerValue">30</span>초</div>
+        </div>
+        <div id="se"></div>
+        <div id="ss"></div>
+        <input type="text" id="sa" placeholder="여기에 정답을 입력하세요">
+        <div id="answer"></div>
+        <div id="buttonContainer">
+            <button onclick="random()">랜덤 한자</button>
+            <button onclick="check()">정답 확인</button>
+            <button onclick="show()" onkeypress="checkOnSpace(event)">정답 보기</button>
+            <button onclick="showHiragana()">히라가나 보기</button>
+        </div>
+        
+    </div>
+    <script>
+        let ear = ["青い","赤い","明るい","暖かい","頭がいい","暑い","家","重い","家族","家内","軽い","暗い","黒い","細かい","寒い","白い","涼しい","正しい","楽しい","近い","強い","低い","広い","太い","細い","短い","良い","弱い","悪い","元気だ","親切","好き","大事","大変","特別","不偏","変","有名","開ける","集まる","集め","洗う","歩く","安心する","動く","歌う"];
+        let hii;
+        let score =0;
+        let timerValue = 30;
+        let timerInterval;
+        
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                timerValue--;// 1초 감소
+                document.getElementById("timerValue").innerText = timerValue;
+                if (timerValue <= 0) {
+                    clearInterval(timerInterval); // 타이머 종료
+                    alert("시간 종료!");
+                }
+            }, 1000);  // 1초마다 실행
+        }
+
+        function random() {
+            document.getElementById("se").innerHTML = " ";
+            let hi = Math.floor(Math.random() * ear.length);
+            hii = ear[hi];
+            document.getElementById("se").innerHTML = hii;
+            document.getElementById("answer").innerText = "";
+            document.getElementById("sa").value = "";
+            clearInterval(timerInterval); // 이전 타이머 종료
+            timerValue = 30; // 타이머 초기화
+            document.getElementById("timerValue").innerText = timerValue; //타이머 값 초기화
+            startTimer(); // 타이머 시작
+        } 
+        
+        function check() {
+            let us = document.getElementById("sa").value; 
+            let ka = kor(hii); 
+            if (us == ka) { 
+                alert("정답!!!");
+                updateScore(1);
+                clearInterval(timerInterval); // 타이머 정지 기능
+            } else {
+                alert("땡!");
+            }
+        }
+        
+        function show() {
+            document.getElementById("answer").innerText = kor(hii);
+            clearInterval(timerInterval);  //타이머 정지 기능
+        }
+    
+        function checkOnSpace(event) {
+            if (event.keyCode === 32) { // 스페이스바를 눌렀을 때
+                show(); // 정답 표시 함수 호출
+            }
+        }
+        function kor(e) {
+            switch (e) {
+                case "青い":
+                    return "파랗다";
+                case "赤い":
+                    return "빨갛다";
+                case "明るい":
+                    return "밝다";
+                case "暖かい":
+                    return "따뜻하다";
+                case "頭がいい":
+                    return "머리가 좋다";
+                case "暑い":
+                    return "덥다";
+                case "家":
+                    return "집";
+                case "重い":
+                    return "무겁다";
+                case "家族":
+                    return "가족";
+                case "家内":
+                    return "가내";
+                case "軽い":
+                    return "가볍다";
+                case "暗い":
+                    return "어둡다";
+                case "黒い":
+                    return "검다";
+                case "細かい":
+                    return "미세하다";
+                case "寒い":
+                    return "춥다";
+                case "白い":
+                    return "하얗다";
+                case "涼しい":
+                    return "시원하다";
+                case "正しい":
+                    return "올바른";
+                case "楽しい":
+                    return "즐겁다";
+                case "近い":
+                    return "가깝다";
+                case "強い":
+                    return "강하다";
+                case "低い":
+                    return "낮다";
+                case "広い":
+                    return "넓다";
+                case "太い":
+                    return "굵다";
+                case "細い":
+                    return "가늘다";
+                case "短い":
+                    return "짧다"; 
+                case "良い":
+                    return "좋다"; 
+                case "弱い":
+                    return "약하다"; 
+                case "悪い":
+                    return "나쁘다"; 
+                case "元気だ":
+                    return "건강하다";
+                case "親切":
+                    return "친절";
+                case "好き":
+                    return "좋아함";
+                case "大事":
+                    return "소중함";
+                case "大変":
+                    return "큰일";
+                case "特別":
+                    return "특별";
+                case "不偏":
+                    return "불편"; 
+                case "変":
+                    return "이상하다"; 
+                case "有名":
+                    return "유명"; 
+                case "開ける":
+                    return "열다"; 
+                case "集まる":
+                    return "모이다"; 
+                case "集め":
+                    return "수집하다"; 
+                case "洗う":
+                    return "씻다"; 
+                case "歩く":
+                    return "걷다"; 
+                case "安心する":
+                    return "안심하다"; 
+                case "動く":
+                    return "움직이다";
+                case "歌う":
+                    return "노래하다"; 
+            }
+        }
+        function updateScore(point) {
+            score += point;
+            document.getElementById("scoreValue").innerHTML = score;
+        }
+        const kanjiMapping = {
+            "青い": "あおい",
+            "赤い": "あかい",
+            "明るい": "あかるい",
+            "暖かい": "あたたかい",
+            "頭がいい": "あたまがいい",
+            "暑い": "あつい",
+            "家": "いえ",
+            "重い": "おもい",
+            "家族": "かぞく",
+            "家内": "かない",
+            "軽い": "かるい",
+            "暗い": "くらい",
+            "細かい": "こまかい",
+            "寒い": "さむい",
+            "白い": "しろい",
+            "涼しい": "すずしい",
+            "正しい": "ただしい",
+            "楽しい": "たのしい",
+            "近い": "ちかい",
+            "強い": "つよい",
+            "低い": "ひくい",
+            "広い": "ひろい",
+            "太い": "ふとい",
+            "細い": "ほそい",
+            "短い": "みじかい ",
+            "良い": "よい",
+            "弱い": "よわい",
+            "悪い": "わるい",
+            "元気だ": "げんきだ",
+            "親切": "しんせつ",
+            "好き": "すき",
+            "大事": "だいじ",
+            "大変": "たいへん",
+            "特別": "とくべつ",
+            "不偏": "ふへん",
+            "変": "へん",
+            "有名": "よゆうめいい",
+            "開ける": "あける",
+            "集まる": "あつまる",
+            "集め": "あつめ",
+            "洗う": "あらう",
+            "歩く": "あるく",
+            "安心する": "あんしんする",
+            "動く": "うごく",
+            "歌う": "うたう",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            "開ける": "あける",
+            
+
+        };
+        
+        function showHiragana() {
+            const kanji = document.getElementById("se").innerText.trim();
+            const hiragana = kanjiMapping[kanji];
+            if (hiragana) {
+                document.getElementById("answer").innerText = kanji + " (" + hiragana + ")";
+            } else {
+                document.getElementById("answer").innerText = "히라가나 없음";
+            }
+        }
+    </script>
+</body>
+</html>
